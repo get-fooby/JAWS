@@ -41,7 +41,7 @@ function JAWS-ENUM {
     $output += " Users`r`n"
     $output += "-----------------------------------------------------------`r`n"
     $adsi = [ADSI]"WinNT://$env:COMPUTERNAME"
-    $adsi.Children | where {$_.SchemaClassName -eq 'user'} | Foreach-Object {
+    $adsi.Children | Where-Object {$_.SchemaClassName -eq 'user'} | Foreach-Object {
         $groups = $_.Groups() | Foreach-Object {$_.GetType().InvokeMember("Name", 'GetProperty', $null, $_, $null)}
         $output += "----------`r`n"
         $output += "Username: " + $_.Name +  "`r`n"
@@ -91,7 +91,7 @@ function JAWS-ENUM {
     If ($Action)    {$rules= $rules | where-object {$_.Action     -eq $Action}}
     If ($Grouping)  {$rules= $rules | where-object {$_.Grouping -like $Grouping}}
     $rules}
-    $output += (Get-firewallRule -enabled $true | sort direction,applicationName,name | format-table -property Name , localPorts,applicationname | out-string)
+    $output += (Get-firewallRule -enabled $true | Sort-Object direction,applicationName,name | format-table -property Name , localPorts,applicationname | out-string)
     $output += "-----------------------------------------------------------`r`n"
     $output += " Hosts File Content`r`n"
     $output += "-----------------------------------------------------------`r`n"
@@ -102,39 +102,39 @@ function JAWS-ENUM {
     $output += "-----------------------------------------------------------`r`n"
     $output += " Processes`r`n"
     $output += "-----------------------------------------------------------`r`n"
-    $output += ((Get-WmiObject win32_process | Select-Object Name,ProcessID,@{n='Owner';e={$_.GetOwner().User}},CommandLine | sort name | format-table -wrap -autosize | out-string) + "`r`n")
+    $output += ((Get-WmiObject win32_process | Select-Object Name,ProcessID,@{n='Owner';e={$_.GetOwner().User}},CommandLine | Sort-Object name | format-table -wrap -autosize | out-string) + "`r`n")
     $output += "-----------------------------------------------------------`r`n"
     $output += " Scheduled Tasks`r`n"
     $output += "-----------------------------------------------------------`r`n"
     $output += "Current System Time: " + (get-date)
-    $output += (schtasks /query /FO CSV /v | convertfrom-csv | where { $_.TaskName -ne "TaskName" } | select "TaskName","Run As User", "Task to Run"  | fl | out-string)
+    $output += (schtasks /query /FO CSV /v | convertfrom-csv | Where-Object { $_.TaskName -ne "TaskName" } | Select-Object "TaskName","Run As User", "Task to Run"  | Format-List | out-string)
     $output += "`r`n"
     $output += "-----------------------------------------------------------`r`n"
     $output += " Services`r`n"
     $output += "-----------------------------------------------------------`r`n"
-    $output += (get-service | Select Name,DisplayName,Status | sort status | Format-Table -Property * -AutoSize | Out-String -Width 4096)
+    $output += (get-service | Select-Object Name,DisplayName,Status | Sort-Object status | Format-Table -Property * -AutoSize | Out-String -Width 4096)
     $output += "`r`n"
     write-output "	- Gathering Installed Software"
     $output += "`r`n"
     $output += "-----------------------------------------------------------`r`n"
     $output += " Installed Programs`r`n"
     $output += "-----------------------------------------------------------`r`n"
-    $output += (get-wmiobject -Class win32_product | select Name, Version, Caption | ft -hidetableheaders -autosize| out-string -Width 4096)
+    $output += (get-wmiobject -Class win32_product | Select-Object Name, Version, Caption | Format-Table -hidetableheaders -autosize| out-string -Width 4096)
     $output += "`r`n"
     $output += "-----------------------------------------------------------`r`n"
     $output += " Installed Patches`r`n"
     $output += "-----------------------------------------------------------`r`n"
-    $output += (Get-Wmiobject -class Win32_QuickFixEngineering -namespace "root\cimv2" | select HotFixID, InstalledOn| ft -autosize | out-string )
+    $output += (Get-Wmiobject -class Win32_QuickFixEngineering -namespace "root\cimv2" | Select-Object HotFixID, InstalledOn| Format-Table -autosize | out-string )
     $output += "`r`n"
     $output += "-----------------------------------------------------------`r`n"
     $output += " Program Folders`r`n"
     $output += "-----------------------------------------------------------`r`n"
     $output += "`n`rC:\Program Files`r`n"
     $output += "-------------"
-    $output += (get-childitem "C:\Program Files"  -EA SilentlyContinue  | select Name  | ft -hidetableheaders -autosize| out-string)
+    $output += (get-childitem "C:\Program Files"  -EA SilentlyContinue  | Select-Object Name  | Format-Table -hidetableheaders -autosize| out-string)
     $output += "C:\Program Files (x86)`r`n"
     $output += "-------------------"
-    $output += (get-childitem "C:\Program Files (x86)"  -EA SilentlyContinue  | select Name  | ft -hidetableheaders -autosize| out-string)
+    $output += (get-childitem "C:\Program Files (x86)"  -EA SilentlyContinue  | Select-Object Name  | Format-Table -hidetableheaders -autosize| out-string)
     $output += "`r`n"
     write-output "	- Gathering File System Information"
     $output += "-----------------------------------------------------------`r`n"
@@ -143,9 +143,9 @@ function JAWS-ENUM {
     $files = get-childitem C:\
     foreach ($file in $files){
         try {
-            $output += (get-childitem "C:\$file" -include *.ps1,*.bat,*.com,*.vbs,*.txt,*.html,*.conf,*.rdp,.*inf,*.ini -recurse -EA SilentlyContinue | get-acl -EA SilentlyContinue | select path -expand access | 
-            where {$_.identityreference -notmatch "BUILTIN|NT AUTHORITY|EVERYONE|CREATOR OWNER|NT SERVICE"} | where {$_.filesystemrights -match "FullControl|Modify"} | 
-            ft @{Label="";Expression={Convert-Path $_.Path}}  -hidetableheaders -autosize | out-string -Width 4096)
+            $output += (get-childitem "C:\$file" -include *.ps1,*.bat,*.com,*.vbs,*.txt,*.html,*.conf,*.rdp,.*inf,*.ini -recurse -EA SilentlyContinue | get-acl -EA SilentlyContinue | Select-Object path -expand access | 
+            Where-Object {$_.identityreference -notmatch "BUILTIN|NT AUTHORITY|EVERYONE|CREATOR OWNER|NT SERVICE"} | Where-Object {$_.filesystemrights -match "FullControl|Modify"} | 
+            Format-Table @{Label="";Expression={Convert-Path $_.Path}}  -hidetableheaders -autosize | out-string -Width 4096)
             }
         catch {
             $output += "`nFailed to read more files`r`n"
@@ -158,9 +158,9 @@ function JAWS-ENUM {
     $folders = get-childitem C:\
     foreach ($folder in $folders){
         try {
-            $output += (Get-ChildItem -Recurse "C:\$folder" -EA SilentlyContinue | ?{ $_.PSIsContainer} | get-acl  | select path -expand access |  
-            where {$_.identityreference -notmatch "BUILTIN|NT AUTHORITY|CREATOR OWNER|NT SERVICE"}  | where {$_.filesystemrights -match "FullControl|Modify"} | 
-            select path,filesystemrights,IdentityReference |  ft @{Label="";Expression={Convert-Path $_.Path}}  -hidetableheaders -autosize | out-string -Width 4096)
+            $output += (Get-ChildItem -Recurse "C:\$folder" -EA SilentlyContinue | Where-Object { $_.PSIsContainer} | get-acl  | Select-Object path -expand access |  
+            Where-Object {$_.identityreference -notmatch "BUILTIN|NT AUTHORITY|CREATOR OWNER|NT SERVICE"}  | Where-Object {$_.filesystemrights -match "FullControl|Modify"} | 
+            Select-Object path,filesystemrights,IdentityReference |  Format-Table @{Label="";Expression={Convert-Path $_.Path}}  -hidetableheaders -autosize | out-string -Width 4096)
              }
         catch {
             $output += "`nFailed to read more folders`r`n"
@@ -170,7 +170,7 @@ function JAWS-ENUM {
     $output += "-----------------------------------------------------------`r`n"
     $output += " Mapped Drives`r`n"
     $output += "-----------------------------------------------------------`r`n"
-    $output += (Get-WmiObject -Class Win32_LogicalDisk | select DeviceID, VolumeName | ft -hidetableheaders -autosize | out-string -Width 4096)
+    $output += (Get-WmiObject -Class Win32_LogicalDisk | Select-Object DeviceID, VolumeName | Format-Table -hidetableheaders -autosize | out-string -Width 4096)
     $output += "-----------------------------------------------------------`r`n"
     $output += " Unquoted Service Paths`r`n"
     $output += "-----------------------------------------------------------`r`n"
@@ -179,34 +179,32 @@ function JAWS-ENUM {
     $output += "-----------------------------------------------------------`r`n"
     $output += " Services Where the EXE can be modified`r`n"
     $output += "-----------------------------------------------------------`r`n"
-    $output += ($CurrentEAPreference = $ErrorActionPreference
-                # Don't Hate Me Bro
+                $CurrentEAPreference = $ErrorActionPreference
                 $ErrorActionPreference = 'SilentlyContinue'
-                (Get-WmiObject win32_service) | foreach-object {
-                $thisServiceName = $_.name
-                (( $_ | select Name, DisplayName, @{Name="Path"; Expression={$_.PathName.split('"')[1]}} | get-acl -EA SilentlyContinue | select path -expand access | where {$_.identityreference -notmatch "BUILTIN|SYSTEM|CREATOR OWNER|NT SERVICE"} | where {$_.filesystemrights -match "FullControl|Modify"} | Select Path).path).replace("Microsoft.PowerShell.Core\FileSystem::","") } | Select-Object @{Label="name";Expression={$thisServiceName}}, @{Label="";Expression={$_}} | ft -hidetableheaders -autosize | out-string -Width 4096
-                $ErrorActionPreference = $CurrentEAPreference)
+                Get-WmiObject win32_service | foreach-object {
+                    $thisServiceName = $_.name
+                    $output += (( $_ | Select-Object Name, DisplayName, @{Name="Path"; Expression={$_.PathName.split('"')[1]}} | get-acl -EA SilentlyContinue | Select-Object path -expand access | Where-Object {$_.identityreference -notmatch "BUILTIN|SYSTEM|CREATOR OWNER|NT SERVICE"} | Where-Object {$_.filesystemrights -match "FullControl|Modify"} | Select-Object Path).path).replace("Microsoft.PowerShell.Core\FileSystem::","") } | Select-Object @{Label="name";Expression={$thisServiceName}}, @{Label="";Expression={$_}} | Format-Table -hidetableheaders -autosize | out-string -Width 4096; $ErrorActionPreference = $CurrentEAPreference
     $output += "`r`n"
     $output += "-----------------------------------------------------------`r`n"
     $output += " Recent Documents`r`n"
     $output += "-----------------------------------------------------------`r`n"
-    $output += (get-childitem "C:\Users\$env:username\AppData\Roaming\Microsoft\Windows\Recent"  -EA SilentlyContinue | select Name | ft -hidetableheaders | out-string )
+    $output += (get-childitem "C:\Users\$env:username\AppData\Roaming\Microsoft\Windows\Recent"  -EA SilentlyContinue | Select-Object Name | Format-Table -hidetableheaders | out-string )
     $output += "`r`n"
     $output += "-----------------------------------------------------------`r`n"
     $output += " Potentially Interesting Files in Users Directory `r`n"
     $output += "-----------------------------------------------------------`r`n"
-    $output += (get-childitem "C:\Users\" -recurse -Include *.zip,*.rar,*.7z,*.gz,*.conf,*.rdp,*.kdbx,*.crt,*.pem,*.ppk,*.txt,*.xml,*.vnc.*.ini,*.vbs,*.bat,*.ps1,*.cmd -EA SilentlyContinue | %{$_.FullName } | out-string)
+    $output += (get-childitem "C:\Users\" -recurse -Include *.zip,*.rar,*.7z,*.gz,*.conf,*.rdp,*.kdbx,*.crt,*.pem,*.ppk,*.txt,*.xml,*.vnc.*.ini,*.vbs,*.bat,*.ps1,*.cmd -EA SilentlyContinue | ForEach-Object {$_.FullName } | out-string)
     $output += "`r`n"
     $output += "-----------------------------------------------------------`r`n"
     $output += " 10 Last Modified Files in C:\User`r`n"
     $output += "-----------------------------------------------------------`r`n"
-    $output += (Get-ChildItem 'C:\Users' -recurse -EA SilentlyContinue | Sort {$_.LastWriteTime} |  %{$_.FullName } | select -last 10 | ft -hidetableheaders | out-string)
+    $output += (Get-ChildItem 'C:\Users' -recurse -EA SilentlyContinue | Sort-Object {$_.LastWriteTime} |  ForEach-Object {$_.FullName } | Select-Object -last 10 | Format-Table -hidetableheaders | out-string)
     $output += "`r`n"
     $output += "-----------------------------------------------------------`r`n"
     $output += " MUICache Files`r`n"
     $output += "-----------------------------------------------------------`r`n"
     get-childitem "HKCU:\Software\Classes\Local Settings\Software\Microsoft\Windows\Shell\" -EA SilentlyContinue |
-    foreach { $CurrentKey = (Get-ItemProperty -Path $_.PsPath)
+    ForEach-Object { $CurrentKey = (Get-ItemProperty -Path $_.PsPath)
        if ($CurrentKey -match "C:\\") {
           $output += ($_.Property -join "`r`n")
        }
