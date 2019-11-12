@@ -35,6 +35,7 @@ PS C:\temp> .\jaws-enum.ps1 -OutputFileName Jaws-Enum.txt
   - MuiCache Files
   - Scheduled Tasks
   - Service Binaries with Weak Permissions
+  - Security Accounts Manager (SAM) permissions
 
 ## Known Issues
 
