@@ -177,6 +177,17 @@ function JAWS-ENUM {
     $output += (cmd /c  'wmic service get name,displayname,pathname,startmode |findstr /i "auto" |findstr /i /v "c:\windows\\" |findstr /i /v """')
     $output += "`r`n"
     $output += "-----------------------------------------------------------`r`n"
+    $output += " Services Where the EXE can be modified`r`n"
+    $output += "-----------------------------------------------------------`r`n"
+    $output += ($CurrentEAPreference = $ErrorActionPreference
+                # Don't Hate Me Bro
+                $ErrorActionPreference = 'SilentlyContinue'
+                (Get-WmiObject win32_service) | foreach-object {
+                $thisServiceName = $_.name
+                (( $_ | select Name, DisplayName, @{Name="Path"; Expression={$_.PathName.split('"')[1]}} | get-acl -EA SilentlyContinue | select path -expand access | where {$_.identityreference -notmatch "BUILTIN|SYSTEM|CREATOR OWNER|NT SERVICE"} | where {$_.filesystemrights -match "FullControl|Modify"} | Select Path).path).replace("Microsoft.PowerShell.Core\FileSystem::","") } | Select-Object @{Label="name";Expression={$thisServiceName}}, @{Label="";Expression={$_}} | ft -hidetableheaders -autosize | out-string -Width 4096
+                $ErrorActionPreference = $CurrentEAPreference)
+    $output += "`r`n"
+    $output += "-----------------------------------------------------------`r`n"
     $output += " Recent Documents`r`n"
     $output += "-----------------------------------------------------------`r`n"
     $output += (get-childitem "C:\Users\$env:username\AppData\Roaming\Microsoft\Windows\Recent"  -EA SilentlyContinue | select Name | ft -hidetableheaders | out-string )
