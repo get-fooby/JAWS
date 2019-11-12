@@ -34,6 +34,7 @@ PS C:\temp> .\jaws-enum.ps1 -OutputFileName Jaws-Enum.txt
   - Potentially Vulnerable Services
   - MuiCache Files
   - Scheduled Tasks
+  - Service Binaries with Weak Permissions
 
 ## Known Issues
 
@@ -41,9 +42,11 @@ PS C:\temp> .\jaws-enum.ps1 -OutputFileName Jaws-Enum.txt
 - When running from within a shell the script doesnt always tell you its finished.
 - When running within some PowerShell reverse shells the running menu isnt shown.
 
-
-
 ## To Do
   - Add full directory listing with user defined depth
   - ~~Read SAM file permissions~~
   - Improve output
+
+## Guidance
+
+Where services have weak permissions, you can swap out the exe, restart the service or the PC to execute that binary as whatever user runs that service.
