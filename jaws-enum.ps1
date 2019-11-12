@@ -183,7 +183,8 @@ function JAWS-ENUM {
                 $ErrorActionPreference = 'SilentlyContinue'
                 Get-WmiObject win32_service | foreach-object {
                     $thisServiceName = $_.name
-                    $output += (( $_ | Select-Object Name, DisplayName, @{Name="Path"; Expression={$_.PathName.split('"')[1]}} | get-acl -EA SilentlyContinue | Select-Object path -expand access | Where-Object {$_.identityreference -notmatch "BUILTIN|SYSTEM|CREATOR OWNER|NT SERVICE"} | Where-Object {$_.filesystemrights -match "FullControl|Modify"} | Select-Object Path).path).replace("Microsoft.PowerShell.Core\FileSystem::","") } | Select-Object @{Label="name";Expression={$thisServiceName}}, @{Label="";Expression={$_}} | Format-Table -hidetableheaders -autosize | out-string -Width 4096; $ErrorActionPreference = $CurrentEAPreference
+                    $output += ( (( $_ | Select-Object Name, DisplayName, @{Name="Path"; Expression={$_.PathName.split('"')[1]}} | get-acl -EA SilentlyContinue | Select-Object path -expand access | Where-Object {$_.identityreference -notmatch "BUILTIN|SYSTEM|CREATOR OWNER|NT SERVICE"} | Where-Object {$_.filesystemrights -match "FullControl|Modify"} | Select-Object Path).path).replace("Microsoft.PowerShell.Core\FileSystem::","") } | Select-Object @{Label="name";Expression={$thisServiceName}}, @{Label="";Expression={$_}} | Format-Table -hidetableheaders -autosize | out-string -Width 4096)
+                    $ErrorActionPreference = $CurrentEAPreference
     $output += "`r`n"
     $output += "-----------------------------------------------------------`r`n"
     $output += " Recent Documents`r`n"
@@ -271,7 +272,9 @@ function JAWS-ENUM {
             $output += "The default domainname is $DefaultDomainName `r`n"
             }
         }
+    Write-Host "Script Completed"
     $output += "`r`n"
+    $output += "Script Completed"
     if ($OutputFilename.length -gt 0)
        {
         $output | Out-File -FilePath $OutputFileName -encoding utf8
