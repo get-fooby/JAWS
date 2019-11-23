@@ -179,12 +179,12 @@ function JAWS-ENUM {
     $output += "-----------------------------------------------------------`r`n"
     $output += " Services Where the EXE can be modified`r`n"
     $output += "-----------------------------------------------------------`r`n"
-                $CurrentEAPreference = $ErrorActionPreference
-                $ErrorActionPreference = 'SilentlyContinue'
-                Get-WmiObject win32_service | foreach-object {
-                    $thisServiceName = $_.name
-                    $output += ( (( $_ | Select-Object Name, DisplayName, @{Name="Path"; Expression={$_.PathName.split('"')[1]}} | get-acl -EA SilentlyContinue | Select-Object path -expand access | Where-Object {$_.identityreference -notmatch "BUILTIN|SYSTEM|CREATOR OWNER|NT SERVICE"} | Where-Object {$_.filesystemrights -match "FullControl|Modify"} | Select-Object Path).path).replace("Microsoft.PowerShell.Core\FileSystem::","") } | Select-Object @{Label="name";Expression={$thisServiceName}}, @{Label="";Expression={$_}} | Format-Table -hidetableheaders -autosize | out-string -Width 4096)
-                    $ErrorActionPreference = $CurrentEAPreference
+          #      $CurrentEAPreference = $ErrorActionPreference
+          #      $ErrorActionPreference = 'SilentlyContinue'
+          #      Get-WmiObject win32_service | foreach-object {
+          #          $thisServiceName = $_.name
+          #          $output += ( (( $_ | Select-Object Name, DisplayName, @{Name="Path"; Expression={$_.PathName.split('"')[1]}} | get-acl -EA SilentlyContinue | Select-Object path -expand access | Where-Object {$_.identityreference -notmatch "BUILTIN|SYSTEM|CREATOR OWNER|NT SERVICE"} | Where-Object {$_.filesystemrights -match "FullControl|Modify"} | Select-Object Path).path).replace("Microsoft.PowerShell.Core\FileSystem::","") } | Select-Object @{Label="name";Expression={$thisServiceName}}, @{Label="";Expression={$_}} | Format-Table -hidetableheaders -autosize | out-string -Width 4096)
+          #          $ErrorActionPreference = $CurrentEAPreference
     $output += "`r`n"
     $output += "-----------------------------------------------------------`r`n"
     $output += " Recent Documents`r`n"
